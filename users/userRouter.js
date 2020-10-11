@@ -70,16 +70,6 @@ router.put("/:id", validateUserId(), (req, res) => {
   }
 });
 // // CUSTOM MIDDLEWARE
-// `logger` logs to the console the following information about each request: request method, request url, and a timestamp
-// this middleware runs on every request made to the API
-
-function logger(req, res, next) {
-  console.log(
-    `[${new Date().toISOString()}]
-    ${req.method} to ${req.url} from ${req.get("Origin")}`
-  );
-  next();
-}
 
 // all endpoints that include an `id` parameter in the url (ex: `/api/users/:id`)
 
@@ -133,11 +123,20 @@ function validateUser() {
 function validatePost(req, res, next) {
   // if the request `body` is missing, cancel the request and respond with status `400` and `{ message: "missing post data" }`
   //  if the request `body` is missing the required `text` field, cancel the request and respond with status `400` and `{ message: "missing required text field" }
-  if (!res.body.text) {
-    return res.status(400).json({
-      message: "Missing post data",
-    });
-    next();
+  return (req, res, next) => {
+    if (!req.body) {
+      return res.status(400).json({
+        message: "Missing user data",
+      });
+      next();
+    } else if (!req.body.text) {
+      return res.status(400).json({
+        message: "Missing field",
+      });
+    } else
+      postDb.insert(req.user)
+      .then(next())
+      .catch(error => res.statuts(500).json({error: 'error'}))
   }
 }
 
