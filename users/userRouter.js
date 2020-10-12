@@ -10,7 +10,12 @@ router.post("/", validateUser(), (req, res) => {
 });
 
 router.post("/:id/posts", validateUserId(), validatePost(), (req, res) => {
-  res.status(200).json(post); //send back the post   and 201 for success create
+  postDb
+    .insert({ user_id: req.params.id, text: req.body.text })
+    .then((post) => {
+      res.status(200).json(post); //send back the post   and 201 for success create
+    })
+    .catch((error) => res.statuts(500).json({ error: "error" }));
 });
 
 //      read
@@ -18,11 +23,12 @@ router.get("/", (req, res) => {
   userDb
     .get()
     .then((users) => {
-      res.status(200).json(posts);
+      res.status(200).json(users);
     })
     .catch((error) => {
+      console.log(error);
       res.status(500).json({
-        message: "Error retrieving",
+        message: error.message,
       });
     });
 });
@@ -46,7 +52,27 @@ router.get("/:id/posts", validateUserId(), (req, res) => {
 
 //      delete
 router.delete("/:id", validateUserId(), (req, res) => {
-  res.status(200).json(req.user);
+  userDb
+    .remove(req.params.id)
+    .then((count) => {
+      if (count > 0) {
+        // res.status(200).json(req.user{message:""});
+        res.status(200).json({
+          user: req.user,
+          message: "The user has been nuked",
+        });
+      } else {
+        res.status(404).json({
+          message: "The user could not be found",
+        });
+      }
+    })
+    .catch((error) => {
+      console.log(error);
+      res.status(500).json({
+        message: "Error removing the user",
+      });
+    });
 });
 
 router.put("/:id", validateUserId(), (req, res) => {
@@ -57,7 +83,7 @@ router.put("/:id", validateUserId(), (req, res) => {
       message: "Failed to provide username",
     });
   } else {
-    userDB
+    userDb
       .update(id, changes)
       .then((user) => {
         res.status(200).json(user);
@@ -128,16 +154,14 @@ function validatePost(req, res, next) {
       return res.status(400).json({
         message: "Missing user data",
       });
-      next();
     } else if (!req.body.text) {
       return res.status(400).json({
         message: "Missing field",
       });
-    } else
-      postDb.insert(req.user)
-      .then(next())
-      .catch(error => res.statuts(500).json({error: 'error'}))
-  }
+    } else {
+      next();
+    }
+  };
 }
 
 module.exports = router;
