@@ -164,4 +164,8 @@ function validatePost(req, res, next) {
   };
 }
 
-module.exports = router;
+module.exports = {
+  validateUserId,
+  validateUser,
+  validatePost
+}
