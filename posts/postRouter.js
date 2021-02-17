@@ -7,7 +7,7 @@ const {
 	validateUser,
 	validatePost,
 } = require("../middleware/user");
-
+// ...
 
 router.get("/", validateUserId(),(req, res) => {
   userDb
