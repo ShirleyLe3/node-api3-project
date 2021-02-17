@@ -1,5 +1,5 @@
 const express = require("express");
-
+const {	validateUserId,	validateUser,	validatePost,} = require("../middleware/user");
 const router = express.Router();
 const userDb = require("./userDb");
 const postDb = require("../posts/postDb");
@@ -70,16 +70,6 @@ router.put("/:id", validateUserId(), (req, res) => {
   }
 });
 // // CUSTOM MIDDLEWARE
-// `logger` logs to the console the following information about each request: request method, request url, and a timestamp
-// this middleware runs on every request made to the API
-
-function logger(req, res, next) {
-  console.log(
-    `[${new Date().toISOString()}]
-    ${req.method} to ${req.url} from ${req.get("Origin")}`
-  );
-  next();
-}
 
 // all endpoints that include an `id` parameter in the url (ex: `/api/users/:id`)
 
@@ -104,41 +94,50 @@ function validateUserId() {
   };
 }
 
-function validateUser() {
-  //  if the request `body` is missing, cancel the request and respond with status `400` and `{ message: "missing user data" }`
-  //  if the request `body` is missing the required `name` field, cancel the request and respond with status `400` and `{ message: "missing required name field" }`
-  return (req, res, next) => {
-    if (!req.body) {
-      return res.status(400).json({
-        message: "Missing user data",
-      });
-      next();
-    } else if (!req.body.name) {
-      return res.status(400).json({
-        message: "Missing field",
-      });
-    } else
-      userDb
-        .insert(req.body)
-        .then((user) => {
-          req.user = user;
-          next();
-        })
-        .catch((error) => {
-          res.status(500).json({ message: "Error retrieving" });
-        });
-  };
-}
+// function validateUser() {
+//   //  if the request `body` is missing, cancel the request and respond with status `400` and `{ message: "missing user data" }`
+//   //  if the request `body` is missing the required `name` field, cancel the request and respond with status `400` and `{ message: "missing required name field" }`
+//   return (req, res, next) => {
+//     if (!req.body) {
+//       return res.status(400).json({
+//         message: "Missing user data",
+//       });
+//       next();
+//     } else if (!req.body.name) {
+//       return res.status(400).json({
+//         message: "Missing field",
+//       });
+//     } else
+//       userDb
+//         .insert(req.body)
+//         .then((user) => {
+//           req.user = user;
+//           next();
+//         })
+//         .catch((error) => {
+//           res.status(500).json({ message: "Error retrieving" });
+//         });
+//   };
+// }
 
-function validatePost(req, res, next) {
-  // if the request `body` is missing, cancel the request and respond with status `400` and `{ message: "missing post data" }`
-  //  if the request `body` is missing the required `text` field, cancel the request and respond with status `400` and `{ message: "missing required text field" }
-  if (!res.body.text) {
-    return res.status(400).json({
-      message: "Missing post data",
-    });
-    next();
-  }
-}
+// function validatePost(req, res, next) {
+//   // if the request `body` is missing, cancel the request and respond with status `400` and `{ message: "missing post data" }`
+//   //  if the request `body` is missing the required `text` field, cancel the request and respond with status `400` and `{ message: "missing required text field" }
+//   return (req, res, next) => {
+//     if (!req.body) {
+//       return res.status(400).json({
+//         message: "Missing user data",
+//       });
+//       next();
+//     } else if (!req.body.text) {
+//       return res.status(400).json({
+//         message: "Missing field",
+//       });
+//     } else
+//       postDb.insert(req.user)
+//       .then(next())
+//       .catch(error => res.statuts(500).json({error: 'error'}))
+//   }
+// }
 
 module.exports = router;
